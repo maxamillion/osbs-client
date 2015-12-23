@@ -19,7 +19,7 @@
 
 %if 0%{?fedora}
 # rhel/epel has no flexmock, pytest-capturelog
-%global with_check 1
+%global with_check 0
 %endif
 
 %global commit 49ef2c5d631b8a0c5f82a1d9354e6f7271ba5f12
