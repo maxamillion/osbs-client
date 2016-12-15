@@ -1,0 +1,62 @@
+{
+    "disable_plugins": [
+        {
+            "plugin_type": "postbuild_plugins",
+            "plugin_name": "pulp_push"
+        },
+        {
+            "plugin_type": "postbuild_plugins",
+            "plugin_name": "pulp_sync"
+        },
+        {
+            "plugin_type": "postbuild_plugins",
+            "plugin_name": "pulp_pull"
+        }
+    ],
+
+    "enable_plugins": [
+       {
+            "plugin_type": "postbuild_plugins",
+            "plugin_name": "tag_and_push",
+            "plugin_args": {
+                "registries": {
+                    "candidate-registry.stg.fedoraproject.org": {
+                        "insecure": false,
+                        "version": "v2"
+                    }
+                }
+            }
+        },
+        {
+            "plugin_type": "prebuild_plugins",
+            "plugin_name": "pull_base_image",
+            "plugin_args": {
+                "parent_registry_insecure": false,
+                "parent_registry": "registry.stg.fedoraproject.org"
+            }
+        },
+        {
+            "plugin_type": "exit_plugins",
+            "plugin_name": "koji_promote",
+            "plugin_args": {
+                  "kojihub": "https://koji.stg.fedoraproject.org/kojihub",
+                  "verify_ssl": true,
+                  "target": "rawhide-docker-candidate",
+                  "url": "https://osbs.stg.fedoraproject.org/",
+                  "blocksize": 10485760,
+                  "koji_principal": "osbs/osbs.stg.fedoraproject.org@STG.FEDORAPROJECT.ORG",
+                  "koji_keytab": "FILE:/etc/krb5.osbs_osbs.stg.fedoraproject.org.keytab",
+                  "use_auth": true
+            }
+        },
+        {
+            "plugin_type": "exit_plugins",
+            "plugin_name": "store_metadata_in_osv3",
+            "plugin_args": {
+                "url": "https://osbs.stg.fedoraproject.org/",
+                "verify_ssl": false,
+                "use_auth": true
+            }
+        }
+    ]
+}

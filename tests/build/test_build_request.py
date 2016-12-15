@@ -1425,16 +1425,66 @@ class TestBuildRequest(object):
             if plugin['name'] == plugin_name:
                 assert False
 
-    def test_render_prod_custom_site_plugin_override(self):
+    def test_render_prod_custom_site_plugin_override_compress(self):
         """
-        Test to make sure that when we attempt to override a plugin's args,
-        they are actually overridden in the JSON for the build_request
-        after running build_request.render()
+        Test to make sure that when we attempt to override the compress
+        plugin's args, they are actually overridden in the JSON for the
+        build_request after running build_request.render() and the plugins
+        are in the correct sequential order
         """
 
         plugin_type = "postbuild_plugins"
         plugin_name = "compress"
         plugin_args = {"foo": "bar"}
+
+        kwargs = get_sample_prod_params()
+
+        unmodified_build_request = BuildRequest(INPUTS_PATH)
+        unmodified_build_request.set_params(**kwargs)
+        unmodified_build_request.render()
+
+        for plugin_dict in unmodified_build_request.dj.dock_json[plugin_type]:
+            if plugin_dict['name'] == plugin_name:
+                plugin_index = unmodified_build_request.dj.dock_json[plugin_type].index(plugin_dict)
+
+        build_request = BuildRequest(INPUTS_PATH)
+        build_request.customize_conf['enable_plugins'].append(
+            {
+                "plugin_type": plugin_type,
+                "plugin_name": plugin_name,
+                "plugin_args": plugin_args
+            }
+        )
+        build_request.set_params(**kwargs)
+        build_request.render()
+
+        assert {
+                "name": plugin_name,
+                "args": plugin_args
+        } in build_request.dj.dock_json[plugin_type]
+
+        assert unmodified_build_request.dj.dock_json[plugin_type][plugin_index]['name'] == plugin_name
+        assert build_request.dj.dock_json[plugin_type][plugin_index]['name'] == plugin_name
+
+    def test_render_prod_custom_site_plugin_override_tag_and_push(self):
+        """
+        Test to make sure that when we attempt to override the tag_and_push
+        plugin's args, they are actually overridden in the JSON for the
+        build_request after running build_request.render() and the plugins
+        are in the correct sequential order
+        """
+
+        plugin_type = "postbuild_plugins"
+        plugin_name = "tag_and_push"
+        plugin_args = {"foo": "bar"}
+        plugin_args = {
+            "registries": {
+                "registry.example.com": {
+                    "insecure": False,
+                    "version": "v2"
+                }
+            }
+        }
 
         kwargs = get_sample_prod_params()
 

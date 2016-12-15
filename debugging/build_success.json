@@ -1,0 +1,139 @@
+{
+  "prebuild_plugins": [
+    {
+      "args": {
+        "parent_registry_insecure": true,
+        "parent_registry": "registry.stg.fedoraproject.org"
+      },
+      "name": "pull_base_image"
+    },
+    {
+      "args": {
+        "hub": "https://koji.stg.fedoraproject.org/kojihub"
+      },
+      "name": "bump_release"
+    },
+    {
+      "args": {
+        "labels": {
+          "authoritative-source-url": "registry.example.com",
+          "distribution-scope": "private",
+          "vendor": "Fedora Project"
+        }
+      },
+      "name": "add_labels_in_dockerfile"
+    },
+    {
+      "name": "change_from_in_dockerfile"
+    },
+    {
+      "name": "add_dockerfile"
+    },
+    {
+      "args": {
+        "command": "fedpkg sources"
+      },
+      "name": "distgit_fetch_artefacts"
+    },
+    {
+      "args": {
+        "root": "http://koji.stg.fedoraproject.org/koji",
+        "target": "rawhide-docker-candidate",
+        "hub": "https://koji.stg.fedoraproject.org/kojihub"
+      },
+      "name": "koji"
+    },
+    {
+      "args": {
+        "repourls": []
+      },
+      "name": "add_yum_repo_by_url"
+    },
+    {
+      "name": "inject_yum_repo"
+    },
+    {
+      "name": "dockerfile_content"
+    },
+    {
+      "name": "distribution_scope"
+    }
+  ],
+  "image": "maxamillion/cockpit:rawhide-docker-candidate-20161214200234",
+  "postbuild_plugins": [
+    {
+      "args": {
+        "image_id": "BUILT_IMAGE_ID"
+      },
+      "name": "all_rpm_packages"
+    },
+    {
+      "name": "tag_by_labels"
+    },
+    {
+      "name": "tag_from_config"
+    },
+    {
+      "args": {
+        "registries": {
+          "candidate-registry.stg.fedoraproject.org": {
+            "insecure": true
+          }
+        }
+      },
+      "name": "tag_and_push"
+    },
+    {
+      "args": {
+        "load_exported_image": true,
+        "method": "gzip"
+      },
+      "name": "compress"
+    }
+  ],
+  "source": {
+    "provider_params": {
+      "git_commit": "18c550742bc7eed915a3060b7c89d4506d54d705"
+    },
+    "uri": "git://pkgs.stg.fedoraproject.org/docker/cockpit",
+    "provider": "git"
+  },
+  "openshift_build_selflink": "/oapi/v1/namespaces/default/builds/cockpit-master-5",
+  "prepublish_plugins": [
+    {
+      "name": "squash"
+    }
+  ],
+  "exit_plugins": [
+    {
+      "args": {
+        "registries": {}
+      },
+      "name": "delete_from_registry"
+    },
+    {
+      "args": {
+        "kojihub": "https://koji.stg.fedoraproject.org/kojihub",
+        "verify_ssl": false,
+        "target": "rawhide-docker-candidate",
+        "url": "https://osbs.stg.fedoraproject.org",
+        "blocksize": 10485760,
+        "koji_principal": "osbs/osbs.stg.fedoraproject.org@STG.FEDORAPROJECT.ORG",
+        "koji_keytab": "FILE:/etc/krb5.osbs_osbs.stg.fedoraproject.org.keytab",
+        "use_auth": true
+      },
+      "name": "koji_promote"
+    },
+    {
+      "args": {
+        "url": "https://osbs.stg.fedoraproject.org",
+        "verify_ssl": false,
+        "use_auth": true
+      },
+      "name": "store_metadata_in_osv3"
+    },
+    {
+      "name": "remove_built_image"
+    }
+  ]
+}
